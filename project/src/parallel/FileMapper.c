@@ -1,6 +1,7 @@
 #include "FileMapper.h"
 #include "ProcessFunctions.h"
 #include "MyMsg.h"
+#include "Errors.h"
 
 
 #include <sys/sysinfo.h>
@@ -15,13 +16,35 @@
 
 
 
-int free_map(size_t num_allocated, char **mapping, size_t *map_size){
+int allfree(size_t num_allocated, struct pm pm){
     for (size_t i = 0; i < num_allocated; i++){
-        munmap(mapping[i], map_size[i]);
-        mapping[i] = NULL;
+        if (pm.map_size[i] != 0) {
+            munmap(pm.map[i], pm.map_size[i]);
+        }
     }
+    free(pm.map_size);
+    free(pm.map);
+    free(pm.pid);
     return 0;
 }
+
+
+int clear_all_processes(struct pm pm){
+    kill(0, SIGKILL);
+    int st;
+    while (waitpid(0, &st, WNOHANG) > 0)
+        ;
+    return 0;
+}
+
+
+int termination(size_t num_allocated, struct pm pm, int msgqid) {
+    clear_all_processes(pm);
+    allfree(num_allocated, pm);
+    msgctl(msgqid, IPC_RMID, NULL);
+    return 0;
+}
+
 
 
 int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char symbols[], size_t coding, size_t procs, size_t memory_available){
@@ -29,39 +52,54 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
     sysinfo(&si);
     size_t page = getpagesize();
 
-    *num_of_symbols = 0;
-
+    //обработка входных параметров, подстройка под параметры системы.
     if (coding == 0){
-        return -1; //неправильное количество байт кодировки.
+        coding = 1; //кодировка по умолчанию (например ASCII)
     }
     if (procs == 0)
         procs = get_nprocs();
     if (memory_available == 0)
         memory_available = si.freeram / 2;
+
     if ((memory_available < coding) || (memory_available < page))
-        return -2; // слишком мало памяти для загрузки
+        return ERROR_RAM; // слишком мало памяти для загрузки]
 
     size_t map_one_proc = (memory_available / procs / page) * page;
+    if (map_one_proc == 0){
+        map_one_proc = page;
+        procs = memory_available / page;
+    }
 
+    //TO DO возможное вырванивание по кодировке.
+
+    //открытие файла
     int fd;
     if ((fd = open(file_path, O_RDONLY)) == -1)
-        return -1; //не удалось открыть файл.
+        return ERROR_OPEN_FILE; //не удалось открыть файл.
     struct stat st;
     stat(file_path, &st);
     size_t file_len = st.st_size;
 
-    //нормализация исковых данных (фифифф) -> (фи)
-
-    if (MapAndSearch(num_of_symbols, fd, symbols, file_len, coding, procs, map_one_proc) == 0) {
-        close(fd);
-        return 0;
+    //убераем повторяющиеся символы из строки шаблона
+    char *symbols_m = malloc(sizeof(char) * (strlen(symbols) + 1));
+    strcpy(symbols_m, symbols);
+    size_t j = 1;
+    for (size_t i = 1; i < strlen(symbols); i++){
+        size_t z = 0;
+        while ((z < i) && (symbols[z] != symbols[i]))
+            z++;
+        if (z == i){
+            symbols_m[j] = symbols_m[i];
+            j++;
+        }
     }
-    else{
-        close(fd);
-        return -1; //произошла ошибка
-    }
+    symbols_m[j] = '\0';
 
-    //выравнять память для одного процесса по кодировке
+    //по полученным данным выполняем поиск.
+    *num_of_symbols = 0;
+    int result = MapAndSearch(num_of_symbols, fd, symbols_m, file_len, coding, procs, map_one_proc);
+    close(fd);
+    return result;
 }
 
 
@@ -89,8 +127,8 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
             e_o_f = 1;
         }
         if (pm.map[i] == MAP_FAILED) {
-            free_map(i, pm.map, pm.map_size);
-            return -1;
+            allfree(i, pm);
+            return ERROR_MAP;
         }
         i++;
     }
@@ -99,7 +137,8 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
     //создаем очередь сообщений
     int msgqid;
     if ((msgqid = msgget(IPC_PRIVATE, IPC_CREAT|0660)) == -1){
-        free_map(i, pm.map, pm.map_size);
+        allfree(procs, pm);
+        return ERROR_MESSAGE_Q;
     }
 
     //раздаем начальные работы
@@ -107,9 +146,8 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
     pid_t pid = 1;
     while ((i < procs) && (pm.map_size[i] != 0) && (pid > 0)) {
         if ((pid = fork()) < 0) {
-            // обработка ошибки запуска процесса.
-            // исключение создания зомбей.
-            return -1;
+            termination(procs, pm, msgqid);
+            return ERROR_FORK;
         }
         else if (pid == 0)
             FindSymbolInMap(pm.map[i], pm.map_size[i], symbols, coding, msgqid);
@@ -147,15 +185,13 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
                 e_o_f = 1;
             }
             if (pm.map[i] == MAP_FAILED) {
-                //обработка ошибки
-//                free_map(i, pm.map, pm.map_size);
-//                return -1;
+                termination(procs, pm, msgqid);
+                return ERROR_MAP;
             }
             file_offset++;
             if ((pid = fork()) < 0) {
-                // обработка ошибки запуска процесса.
-                // исключение создания зомбей.
-                return -1;
+                termination(procs, pm, msgqid);
+                return ERROR_FORK;
             }
             else if (pid == 0)
                 FindSymbolInMap(pm.map[i], pm.map_size[i], symbols, coding, msgqid);
@@ -163,6 +199,8 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
         else
             num_processes--;
     }
+
+    msgctl(msgqid, IPC_RMID, NULL);
     return 0;
 }
 
