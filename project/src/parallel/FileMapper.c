@@ -1,5 +1,5 @@
 #include "FileMapper.h"
-#include "ProcessFunctions.h"
+#include "Search.h"
 #include "MyMsg.h"
 #include "Errors.h"
 
@@ -49,17 +49,17 @@ int termination(size_t num_allocated, struct pm pm, int msgqid) {
 
 
 
-int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char symbols[], size_t coding, size_t procs, size_t memory_available){
+int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char symbols[], size_t coding, size_t memory_available){
     struct sysinfo si;
     sysinfo(&si);
     size_t page = getpagesize();
+    size_t procs = get_nprocs();
+
 
     //обработка входных параметров, подстройка под параметры системы.
     if (coding == 0){
         coding = 1; //кодировка по умолчанию (например ASCII)
     }
-    if (procs == 0)
-        procs = get_nprocs();
     if (memory_available == 0)
         memory_available = si.freeram / 2;
 
@@ -101,6 +101,7 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
     //по полученным данным выполняем поиск.
     *num_of_symbols = 0;
     int result = MapAndSearch(num_of_symbols, fd, symbols_m, file_len, coding, procs, map_one_proc);
+    free(symbols_m);
     close(fd);
     return result;
 }
