@@ -15,6 +15,8 @@
 #include <memory.h>
 
 
+#define MIN(a, b) ((a) < (b)) ? (a) : (b)
+
 
 int allfree(size_t num_allocated, struct pm pm){
     for (size_t i = 0; i < num_allocated; i++){
@@ -64,12 +66,6 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
     if ((memory_available < coding) || (memory_available < page))
         return ERROR_RAM; // слишком мало памяти для загрузки]
 
-    size_t map_one_proc = (memory_available / procs / page) * page;
-    if (map_one_proc == 0){
-        map_one_proc = page;
-        procs = memory_available / page;
-    }
-
     //TO DO возможное вырванивание по кодировке.
 
     //открытие файла
@@ -79,6 +75,13 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
     struct stat st;
     stat(file_path, &st);
     size_t file_len = st.st_size;
+
+    size_t map_one_proc = MIN((memory_available / procs / page) * page, (file_len / procs / page + 1) * page);
+
+    if (map_one_proc == 0){
+        map_one_proc = page;
+        procs = memory_available / page;
+    }
 
     //убераем повторяющиеся символы из строки шаблона
     char *symbols_m = malloc(sizeof(char) * (strlen(symbols) + 1));
