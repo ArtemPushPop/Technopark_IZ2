@@ -12,16 +12,27 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Werror -Wpedantic -ggdb3 -O3")
 
 set(PROJECT_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/project)
 
+# make executable
 add_executable(main "${PROJECT_FOLDER}/main.c")
-
-#build libraries
-add_subdirectory("${PROJECT_FOLDER}/src/")
-target_link_libraries(main consistent)
-include_directories(${PROJECT_FOLDER}/include/)
-
 #configure main.h (data file setting)
 set(DATA_FILE "${CMAKE_CURRENT_SOURCE_DIR}/data/data.txt")
 configure_file("${PROJECT_FOLDER}/include/main.h.in" "${PROJECT_FOLDER}/include/main.h")
+include_directories(${PROJECT_FOLDER}/include/)
+
+
+option(PARALLEL "link parallel library" OFF)
+option(CONSISTENT "link parallel library" OFF)
+
+# build libraries dependent on options
+add_subdirectory("${PROJECT_FOLDER}/src/")
+
+# link necessary libs
+if(PARALLEL)
+    target_link_libraries(main parallel)
+elseif(CONSISTENT)
+    target_link_libraries(main consistent)
+endif()
+
 
 ##tests
 #

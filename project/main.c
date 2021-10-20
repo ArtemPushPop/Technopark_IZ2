@@ -1,9 +1,7 @@
-#include "FileMapper.h"
 #include "main.h"
-
+#include "CountSymbols.h"
 
 #include <stdio.h>
-#include <sys/mman.h>
 
 
 int main(){
