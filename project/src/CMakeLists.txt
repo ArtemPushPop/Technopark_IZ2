@@ -1,6 +1,2 @@
-if (CONSISTENT)
-    add_subdirectory(consistent/)
-endif()
-if (PARALLEL)
-    add_subdirectory(parallel/)
-endif()
+add_subdirectory(consistent/)
+add_subdirectory(parallel/)

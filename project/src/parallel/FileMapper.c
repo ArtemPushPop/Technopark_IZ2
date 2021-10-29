@@ -1,7 +1,7 @@
 #include "FileMapper.h"
-#include "Search.h"
 #include "MyMsg.h"
 #include "Errors.h"
+#include "ProcessFunctions.h"
 
 
 #include <sys/sysinfo.h>
@@ -18,20 +18,20 @@
 #define MIN(a, b) ((a) < (b)) ? (a) : (b)
 
 
-int allfree(size_t num_allocated, struct pm pm){
+int allfree(size_t num_allocated, struct pm *pm){
     for (size_t i = 0; i < num_allocated; i++){
-        if (pm.map_size[i] != 0) {
-            munmap(pm.map[i], pm.map_size[i]);
+        if (pm->map_size[i] != 0) {
+            munmap(pm->map[i], pm->map_size[i]);
         }
     }
-    free(pm.map_size);
-    free(pm.map);
-    free(pm.pid);
+    free(pm->map_size);
+    free(pm->map);
+    free(pm->pid);
     return 0;
 }
 
 
-int clear_all_processes(struct pm pm){
+int clear_all_processes(struct pm *pm){
     kill(0, SIGKILL);
     int st;
     while (waitpid(0, &st, WNOHANG) > 0)
@@ -40,7 +40,7 @@ int clear_all_processes(struct pm pm){
 }
 
 
-int termination(size_t num_allocated, struct pm pm, int msgqid) {
+int termination(size_t num_allocated, struct pm *pm, int msgqid) {
     clear_all_processes(pm);
     allfree(num_allocated, pm);
     msgctl(msgqid, IPC_RMID, NULL);
@@ -131,7 +131,7 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
             e_o_f = 1;
         }
         if (pm.map[i] == MAP_FAILED) {
-            allfree(i, pm);
+            allfree(i, &pm);
             return ERROR_MAP;
         }
         i++;
@@ -141,7 +141,7 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
     //создаем очередь сообщений
     int msgqid;
     if ((msgqid = msgget(IPC_PRIVATE, IPC_CREAT|0660)) == -1){
-        allfree(procs, pm);
+        allfree(procs, &pm);
         return ERROR_MESSAGE_Q;
     }
 
@@ -150,7 +150,7 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
     pid_t pid = 1;
     while ((i < procs) && (pm.map_size[i] != 0) && (pid > 0)) {
         if ((pid = fork()) < 0) {
-            termination(procs, pm, msgqid);
+            termination(procs, &pm, msgqid);
             return ERROR_FORK;
         }
         else if (pid == 0)
@@ -189,12 +189,12 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
                 e_o_f = 1;
             }
             if (pm.map[i] == MAP_FAILED) {
-                termination(procs, pm, msgqid);
+                termination(procs, &pm, msgqid);
                 return ERROR_MAP;
             }
             file_offset++;
             if ((pid = fork()) < 0) {
-                termination(procs, pm, msgqid);
+                termination(procs, &pm, msgqid);
                 return ERROR_FORK;
             }
             else if (pid == 0)
@@ -204,6 +204,7 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
             num_processes--;
     }
 
+    allfree(0, &pm);
     msgctl(msgqid, IPC_RMID, NULL);
     return 0;
 }
