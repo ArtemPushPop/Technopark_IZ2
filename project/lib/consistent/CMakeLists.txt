@@ -1,4 +1,4 @@
-set(SOURCES FileMapper.c Search.c)
+set(SOURCES src/FileMapper.c src/Search.c)
 
 add_library(consistent STATIC ${SOURCES})
 

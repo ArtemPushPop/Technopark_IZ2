@@ -17,7 +17,7 @@ configure_file("${PROJECT_FOLDER}/include/main.h.in" "${PROJECT_FOLDER}/include/
 include_directories(${PROJECT_FOLDER}/include/)
 
 # build libraries
-add_subdirectory("${PROJECT_FOLDER}/src/")
+add_subdirectory("${PROJECT_FOLDER}/lib/")
 
 
 option(PARALLEL "link parallel library" OFF)
@@ -25,6 +25,7 @@ option(CONSISTENT "link consistent library" OFF)
 option(STRESS_TEST "Do stress test of libraries" OFF)
 option(TESTS "Configure unit tests" OFF)
 option(GTEST_LOCAL "gonfigured gtest on local machine?" ON)
+option(ENABLE_COVERAGE "Build tests coverage statistic" OFF)
 
 
 if (STRESS_TEST OR TESTS)

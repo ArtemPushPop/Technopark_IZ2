@@ -1,4 +1,4 @@
-set(SOURCES FileMapper.c ProcessFunctions.c)
+set(SOURCES src/FileMapper.c src/ProcessFunctions.c)
 
 add_library(parallel SHARED ${SOURCES})
 
