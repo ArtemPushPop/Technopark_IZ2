@@ -1,12 +1,10 @@
 #include "data_path.h"
-#include "TimeItExecl.h"
-#include "ExeclArgsCreater.h"
+#include "include/TimeItExecl.h"
+#include "include/ExeclArgsCreater.h"
 
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 
 int main() {
