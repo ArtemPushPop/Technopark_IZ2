@@ -2,6 +2,7 @@
 #include "MyMsg.h"
 #include "Errors.h"
 #include "ProcessFunctions.h"
+#include "CodingFeatures.h"
 
 
 #include <sys/sysinfo.h>
@@ -84,19 +85,22 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
     }
 
     //убераем повторяющиеся символы из строки шаблона
-    char *symbols_m = malloc(sizeof(char) * (strlen(symbols) + 1));
+    size_t symbols_len = strlen(symbols);
+    if ((symbols_len % coding != 0) || (page % coding != 0))
+        return BAD_CODING;
+    char *symbols_m = malloc(sizeof(char) * (symbols_len + 1));
     strcpy(symbols_m, symbols);
     size_t j = 1;
-    for (size_t i = 1; i < strlen(symbols); i++){
+    for (size_t i = 1; i * coding < symbols_len; i++){
         size_t z = 0;
-        while ((z < i) && (symbols[z] != symbols[i]))
+        while ((z < i) && (CompareWithCoding(symbols + coding * z, symbols + coding * i, coding)))
             z++;
         if (z == i){
-            symbols_m[j] = symbols_m[i];
+            CopyWithCoding(symbols_m + coding * j, symbols + coding * i, coding);
             j++;
         }
     }
-    symbols_m[j] = '\0';
+    symbols_m[j * coding] = '\0';
 
     //по полученным данным выполняем поиск.
     *num_of_symbols = 0;
