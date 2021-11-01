@@ -1,0 +1,102 @@
+language: cpp
+dist: bionic
+compiler: gcc
+
+
+install:
+  # необходимо для установки нужной версии Cmake для
+  # правильной установки библиотеки gtest
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
+  - travis_retry wget --no-check-certificate https://cmake.org/files/v3.15/cmake-3.15.1-Linux-x86_64.tar.gz
+  - tar -xvf cmake-3.15.1-Linux-x86_64.tar.gz > /dev/null
+  - mv cmake-3.15.1-Linux-x86_64 cmake-install
+  - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
+  - cd ${TRAVIS_BUILD_DIR}
+
+
+before_script:
+  - mkdir build
+  - cd build
+
+
+matrix:
+  include:
+    - os: linux
+      env:
+        - TEST="valgrind"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-6
+            - g++-6
+            - valgrind
+      script:
+        - cmake -DCONSISTENT=ON -DGTEST_LOCAL=OFF ..
+        - make
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./main
+        - cmake -DCONSISTENT=OFF -DPARALLEL=ON ..
+        - make
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./main
+
+    - os: linux
+      env:
+        - TEST="cppcheck"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-6
+            - g++-6
+            - cppcheck
+      script:
+        - cppcheck ../project
+        - cppcheck ../tests
+
+    - os: linux
+      env:
+        - TEST="coverage + valgrind unit tests"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-6
+            - g++-6
+            - gcovr
+            - valgrind
+      script:
+        - cmake -DTEST=ON -DENABLE_COVERAGE=ON -DGTEST_LOCAL=OFF..
+        - make
+        - make IZ2_coverage
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_coding
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_consistent_test
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_parallel_test
+        - ctest --verbose
+
+        - export CODECOV_TOKEN='89f19a22-138e-4397-853a-85cfd3a3e584'
+        - curl -Os https://uploader.codecov.io/latest/linux/codecov
+
+        - chmod +x codecov
+        - ./codecov -t ${CODECOV_TOKEN}
+
+    - os: linux
+      env:
+        - TEST="stress tests"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-6
+            - g++-6
+            - gcovr
+            - valgrind
+      script:
+        - cmake -DSTRESS_TEST=ON -DGTEST_LOCAL=OFF ..
+        - make
+        - make IZ2_coverage
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./stress_test
