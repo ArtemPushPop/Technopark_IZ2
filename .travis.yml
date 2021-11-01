@@ -72,10 +72,10 @@ matrix:
         - cmake -DTESTS=ON -DENABLE_COVERAGE=ON -DGTEST_LOCAL=OFF ..
         - make
         - make IZ2_coverage
-#        - valgrind  --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_coding
-#        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_consistent_test
-#        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_parallel_test
-#        - ctest --verbose
+        - valgrind  --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_coding
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_consistent_test
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_parallel_test
+        - ctest --verbose
 
         - export CODECOV_TOKEN='6d8bfa4c-1fa7-4377-a9bc-af8c3c7eda3f'
         - bash <(curl -s https://codecov.io/bash) -f IZ2_coverage.xml || echo "Codecov did not collect coverage reports"

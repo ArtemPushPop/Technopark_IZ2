@@ -42,16 +42,20 @@ class TestConsistentMapFixture : public testing::Test {
 protected:
     void SetUp() override {
         fd1 = open(valid_file_name.c_str(), O_RDONLY);
-        fd2 = open(valid_file_name.c_str(), O_RDONLY);
+        fd2 = open((std::string(DATA_FILES_PATH) + "file2.txt").c_str(), O_RDONLY);
         if (fd2 == -1){
             close(fd1);
             exit(1);
         }
         if (fd1 == -1)
             exit(1);
+
         struct stat st;
         stat(valid_file_name.c_str(), &st);
-        file_len = st.st_size;
+        f1_len = st.st_size;
+        stat((std::string(DATA_FILES_PATH) + "file2.txt").c_str(), &st);
+        f2_len = st.st_size;
+
         page = getpagesize();
         valid_memory = page * 4;
     }
@@ -61,34 +65,42 @@ protected:
     }
     std::string valid_file_name = std::string(DATA_FILES_PATH) + "file1.txt";
     std::string invalid_file_name = std::string(DATA_FILES_PATH) + "invalid_file.txt";
+
     size_t valid_coding = 1;
     size_t invalid_coding = 3;
+
     size_t valid_memory;
     size_t invalid_memory = 3;
-    const char *symbols = "abb";
+
+    const char *symbols = "bb";
+    const char *symbols_for_mmap = "b";
+
     int fd1, fd2;
-    size_t file_len;
+    size_t f1_len, f2_len;
+
     size_t page;
 };
 
 
 TEST_F(TestConsistentMapFixture, FindNumSymbols) {
     size_t num_of_symbols = 0;
-    EXPECT_EQ(ERROR_OPEN_FILE, FindNumSymbols(&num_of_symbols, invalid_file_name.c_str(), \
+    EXPECT_EQ(ERROR_OPEN_FILE, FindNumSymbols(&num_of_symbols, invalid_file_name.c_str(),
                                                     symbols, valid_coding, 0));
-    EXPECT_EQ(ERROR_RAM, FindNumSymbols(&num_of_symbols, valid_file_name.c_str(), \
+    EXPECT_EQ(ERROR_RAM, FindNumSymbols(&num_of_symbols, valid_file_name.c_str(),
                                                     symbols, valid_coding, invalid_memory));
-    EXPECT_EQ(BAD_CODING, FindNumSymbols(&num_of_symbols, valid_file_name.c_str(), \
+    EXPECT_EQ(BAD_CODING, FindNumSymbols(&num_of_symbols, valid_file_name.c_str(),
                                                     symbols, invalid_coding, 0));
+    EXPECT_EQ(0, FindNumSymbols(&num_of_symbols, valid_file_name.c_str(),
+                                symbols, 0, 0));
 }
 
 
 TEST_F(TestConsistentMapFixture, MmapAndSearch){
     size_t num_of_symbols = 0;
-    EXPECT_EQ(ERROR_MAP, MmapAndSearch(&num_of_symbols, fd1, file_len, symbols, valid_coding, invalid_memory));
+    EXPECT_EQ(ERROR_MAP, MmapAndSearch(&num_of_symbols, fd1, f1_len, symbols, valid_coding, invalid_memory));
     num_of_symbols = 0;
-    EXPECT_EQ(0, MmapAndSearch(&num_of_symbols, fd2, file_len, symbols, valid_coding, valid_memory));
-    EXPECT_EQ(num_of_symbols, 8);
+    EXPECT_EQ(0, MmapAndSearch(&num_of_symbols, fd2, f2_len, symbols_for_mmap, valid_coding, valid_memory));
+    EXPECT_EQ(num_of_symbols, 4);
 }
 
 

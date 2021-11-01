@@ -71,16 +71,20 @@ class TestParallelMapFixture : public testing::Test {
 protected:
     void SetUp() override {
         fd1 = open(valid_file_name.c_str(), O_RDONLY);
-        fd2 = open(valid_file_name.c_str(), O_RDONLY);
+        fd2 = open((std::string(DATA_FILES_PATH) + "file2.txt").c_str(), O_RDONLY);
         if (fd2 == -1){
             close(fd1);
             exit(1);
         }
         if (fd1 == -1)
             exit(1);
+
         struct stat st;
         stat(valid_file_name.c_str(), &st);
-        file_len = st.st_size;
+        f1_len = st.st_size;
+        stat((std::string(DATA_FILES_PATH) + "file2.txt").c_str(), &st);
+        f2_len = st.st_size;
+
         page = getpagesize();
         valid_memory = page * 4;
     }
@@ -90,14 +94,18 @@ protected:
     }
     const std::string valid_file_name = std::string(DATA_FILES_PATH) + "file1.txt";
     const std::string invalid_file_name = std::string(DATA_FILES_PATH) + "invalid_file.txt";
+
     const size_t valid_coding = 1;
     const size_t invalid_coding = 3;
-    const size_t invalid_memory = 3;
-    const char *symbols = "abb";
 
     size_t valid_memory;
+    const size_t invalid_memory = 3;
+
+    const char *symbols = "abb";
+    const char *symbols_for_mmap = "b";
+
     int fd1, fd2;
-    size_t file_len;
+    size_t f1_len, f2_len;
     size_t page;
 };
 
@@ -110,15 +118,17 @@ TEST_F(TestParallelMapFixture, FindNumSymbols) {
                                                     symbols, valid_coding, invalid_memory));
     EXPECT_EQ(BAD_CODING, FindNumSymbols(&num_of_symbols, valid_file_name.c_str(),
                                                     symbols, invalid_coding, 0));
+    EXPECT_EQ(0, FindNumSymbols(&num_of_symbols, valid_file_name.c_str(),
+                                         symbols, 0, 0));
 }
 
 
 TEST_F(TestParallelMapFixture, MmapAndSearch){
     size_t num_of_symbols = 0;
-    EXPECT_EQ(ERROR_MAP, MapAndSearch(&num_of_symbols, fd1, symbols, file_len, valid_coding, 2, invalid_memory));
+    EXPECT_EQ(ERROR_MAP, MapAndSearch(&num_of_symbols, fd1, symbols, f1_len, valid_coding, 2, invalid_memory));
     num_of_symbols = 0;
-    EXPECT_EQ(0, MapAndSearch(&num_of_symbols, fd2, symbols, file_len, valid_coding, 1, valid_memory));
-    EXPECT_EQ(num_of_symbols, 8);
+    EXPECT_EQ(0, MapAndSearch(&num_of_symbols, fd2, symbols_for_mmap, f2_len, valid_coding, 1, valid_memory));
+    EXPECT_EQ(num_of_symbols, 4);
 }
 
 
