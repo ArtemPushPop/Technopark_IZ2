@@ -52,4 +52,4 @@ include(CodeCoverage)
 setup_target_for_coverage_gcovr_xml(
         NAME IZ2_coverage
         EXECUTABLE ctest
-        BASE_DIRECTORY "${PROJECT_FOLDER}/src")
+        BASE_DIRECTORY "${PROJECT_FOLDER}/lib")
