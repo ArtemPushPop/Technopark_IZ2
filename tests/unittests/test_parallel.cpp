@@ -93,7 +93,7 @@ protected:
     const size_t valid_coding = 1;
     const size_t invalid_coding = 3;
     const size_t invalid_memory = 3;
-    const char *symbols = "ab";
+    const char *symbols = "abb";
 
     size_t valid_memory;
     int fd1, fd2;

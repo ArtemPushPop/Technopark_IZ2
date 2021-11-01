@@ -65,7 +65,7 @@ protected:
     size_t invalid_coding = 3;
     size_t valid_memory;
     size_t invalid_memory = 3;
-    const char *symbols = "ab";
+    const char *symbols = "abb";
     int fd1, fd2;
     size_t file_len;
     size_t page;

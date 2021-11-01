@@ -1,10 +1,3 @@
-if (ENABLE_COVERAGE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  --coverage")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-endif ()
-
-
 include(CTest)
 if (GTEST_LOCAL)
     find_package(GTest REQUIRED)
@@ -46,10 +39,9 @@ configure_file("include/data_path.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/dat
 target_include_directories(unit_consistent_test PUBLIC include)
 target_include_directories(unit_parallel_test PUBLIC include)
 
-
 # код кавереж
 include(CodeCoverage)
 setup_target_for_coverage_gcovr_xml(
         NAME IZ2_coverage
         EXECUTABLE ctest
-        BASE_DIRECTORY "${PROJECT_FOLDER}/lib")
+        BASE_DIRECTORY ${PROJECT_FOLDER}/lib)

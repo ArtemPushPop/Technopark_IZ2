@@ -22,9 +22,6 @@ set(DATA_FILE "${CMAKE_CURRENT_SOURCE_DIR}/data/data.txt")
 configure_file("${PROJECT_FOLDER}/include/main.h.in" "${PROJECT_FOLDER}/include/main.h")
 include_directories(${PROJECT_FOLDER}/include/)
 
-# build libraries
-add_subdirectory("${PROJECT_FOLDER}/lib/")
-
 
 option(PARALLEL "link parallel library" OFF)
 option(CONSISTENT "link consistent library" OFF)
@@ -33,9 +30,22 @@ option(TESTS "Configure unit tests" OFF)
 option(GTEST_LOCAL "gonfigured gtest on local machine?" ON)
 option(ENABLE_COVERAGE "Build tests coverage statistic" OFF)
 
+# проверка в данный момент, так как библиотеки следует
+# билдить с флагом кавереж
+if (ENABLE_COVERAGE)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  --coverage")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+endif ()
+
+
+# build libraries
+add_subdirectory("${PROJECT_FOLDER}/lib/")
+
 
 if (STRESS_TEST OR TESTS)
     set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake)
+    include(CodeCoverage)
     set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
     enable_testing()
     add_subdirectory("tests")
