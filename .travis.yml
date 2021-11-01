@@ -77,7 +77,7 @@ matrix:
         - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_parallel_test
         - ctest --verbose
 
-        - export CODECOV_TOKEN='89f19a22-138e-4397-853a-85cfd3a3e584'
+        - export CODECOV_TOKEN='caac47c2-b7c2-4e0b-b599-c85a9df31eb9'
         - curl -Os https://uploader.codecov.io/latest/linux/codecov
 
         - chmod +x codecov
