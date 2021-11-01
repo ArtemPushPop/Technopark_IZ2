@@ -28,6 +28,9 @@ int allfree(size_t num_allocated, struct pm *pm){
     free(pm->map_size);
     free(pm->map);
     free(pm->pid);
+    pm->map = NULL;
+    pm->pid = NULL;
+    pm->map_size = NULL;
     return 0;
 }
 
