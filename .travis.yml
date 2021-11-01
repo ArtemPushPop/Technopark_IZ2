@@ -69,7 +69,7 @@ matrix:
             - gcovr
             - valgrind
       script:
-        - cmake -DTEST=ON -DENABLE_COVERAGE=ON -DGTEST_LOCAL=OFF ..
+        - cmake -DTESTS=ON -DENABLE_COVERAGE=ON -DGTEST_LOCAL=OFF ..
         - make
         - make IZ2_coverage
         - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_coding
