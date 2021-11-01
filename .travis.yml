@@ -77,7 +77,7 @@ matrix:
 #        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_parallel_test
 #        - ctest --verbose
 
-        - export CODECOV_TOKEN='caac47c2-b7c2-4e0b-b599-c85a9df31eb9'
+        - export CODECOV_TOKEN='6d8bfa4c-1fa7-4377-a9bc-af8c3c7eda3f'
         - bash <(curl -s https://codecov.io/bash) -f IZ2_coverage.xml || echo "Codecov did not collect coverage reports"
 
 
