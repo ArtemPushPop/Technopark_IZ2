@@ -1,2 +1,4 @@
+[![Build Status](https://app.travis-ci.com/ArtemPushPop/Technopark_IZ2.svg?branch=IZ2)](https://app.travis-ci.com/ArtemPushPop/Technopark_IZ2)
+[![codecov](https://codecov.io/gh/ArtemPushPop/Technopark_IZ2/branch/IZ2/graph/badge.svg?token=k41g5Lc4jG)](https://codecov.io/gh/ArtemPushPop/Technopark_IZ2)
 <h3>Вариант #4</h3>
 Перед вами поставлена задача подсчета количества вхождений заданных символов в загруженный в оперативную память файл размером 100 Мб. Составьте наивный алгоритм подсчета вхождений символов, в затем реализуйте параллельную обработку текста несколькими процессами с учетом оптимизации работы с кэш-памятью.
