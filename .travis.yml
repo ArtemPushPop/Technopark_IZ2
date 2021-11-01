@@ -72,7 +72,7 @@ matrix:
         - cmake -DTESTS=ON -DENABLE_COVERAGE=ON -DGTEST_LOCAL=OFF ..
         - make
         - make IZ2_coverage
-#        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_coding
+#        - valgrind  --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_coding
 #        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_consistent_test
 #        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_parallel_test
 #        - ctest --verbose
