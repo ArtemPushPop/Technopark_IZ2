@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 project(IZ2)
 
+# для борьбы с оптимизированным выводом переменных в дебаге
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+
+
+# настройки проекта
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

@@ -36,6 +36,11 @@ target_link_libraries(unit_parallel_test ${GTEST_LINK_LIBS})
 target_link_libraries(unit_parallel_test parallel)
 add_test(NAME AllTestsParallel COMMAND unit_parallel_test)
 
+add_executable(unit_coding test_coding.cpp)
+target_link_libraries(unit_coding ${GTEST_LINK_LIBS})
+target_link_libraries(unit_coding coding)
+add_test(NAME AllTestsCoding COMMAND unit_coding)
+
 # конфигурируем пути до тестовых файлов данных
 configure_file("include/data_path.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/data_path.h")
 target_include_directories(unit_consistent_test PUBLIC include)

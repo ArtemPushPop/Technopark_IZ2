@@ -87,7 +87,7 @@ TEST_F(TestConsistentMapFixture, MmapAndSearch){
     size_t num_of_symbols = 0;
     EXPECT_EQ(ERROR_MAP, MmapAndSearch(&num_of_symbols, fd1, file_len, symbols, valid_coding, invalid_memory));
     num_of_symbols = 0;
-    MmapAndSearch(&num_of_symbols, fd2, file_len, symbols, valid_coding, valid_memory);
+    EXPECT_EQ(0, MmapAndSearch(&num_of_symbols, fd2, file_len, symbols, valid_coding, valid_memory));
     EXPECT_EQ(num_of_symbols, 8);
 }
 
