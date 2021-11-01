@@ -118,11 +118,11 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
 
 int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], size_t fd_length, size_t coding, size_t procs, size_t map_one_proc){
     struct pm pm;
-    pm.pid = (int *) malloc(sizeof(int) * procs);
+    pm.pid = (pid_t *) malloc(sizeof(int) * procs);
     pm.map = (char **) malloc(sizeof(char *) * procs);
     pm.map_size = (size_t *) malloc(sizeof(size_t) * procs);
-    memset(pm.map_size, 0, sizeof(int) * procs);
-    memset(pm.pid, 0, sizeof(int) * procs);
+    memset(pm.map_size, 0, sizeof(size_t) * procs);
+    memset(pm.pid, 0, sizeof(pid_t) * procs);
 
 
     //загрузим возможную часть файла в память
