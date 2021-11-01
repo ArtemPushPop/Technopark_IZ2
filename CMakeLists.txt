@@ -13,10 +13,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_FLAGS "-Wall -Werror -Wpedantic -ggdb3")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Werror -Wpedantic -ggdb3 -O3")
+set(CMAKE_CXX_FLAGS "-Wall -Werror -Wpedantic -ggdb3 -O3")
 
 
-set(PROJECT_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/project)
+set(PROJECT_FOLDER project)
 #configure main.h (data file setting)
 set(DATA_FILE "${CMAKE_CURRENT_SOURCE_DIR}/data/data.txt")
 configure_file("${PROJECT_FOLDER}/include/main.h.in" "${PROJECT_FOLDER}/include/main.h")
