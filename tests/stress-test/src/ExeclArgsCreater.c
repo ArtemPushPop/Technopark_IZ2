@@ -7,12 +7,13 @@ char * MakeCommand(char *cmd, size_t cmd_len, char *path, char *letters){
     strcat(cmd, path);
     strcat(cmd, " -p ");
     strcat(cmd, letters);
+    strcat(cmd, " ");
     return cmd;
 }
 
 
 char * MakePath(char *path, const char* dir, const char *file_name){
-    path[strlen(dir)] = '\0';
+    path[0] = '\0';
     strcat(path, dir);
     strcat(path, file_name);
     return path;

@@ -28,5 +28,7 @@ char * TimeItExecl(const char * command, char result[]){
 
     sprintf(result, "%s %lu", buf, end - begin);
 
+    pclose(pipe);
+
     return result;
 }
