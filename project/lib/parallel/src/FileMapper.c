@@ -20,6 +20,8 @@
 
 
 int allfree(size_t num_allocated, struct pm *pm){
+    if (pm == NULL)
+        return 1;
     for (size_t i = 0; i < num_allocated; i++){
         if (pm->map_size[i] != 0) {
             munmap(pm->map[i], pm->map_size[i]);
@@ -35,7 +37,7 @@ int allfree(size_t num_allocated, struct pm *pm){
 }
 
 
-int clear_all_processes(struct pm *pm){
+int clear_all_processes(){
     kill(0, SIGKILL);
     int st;
     while (waitpid(0, &st, WNOHANG) > 0)
@@ -45,7 +47,7 @@ int clear_all_processes(struct pm *pm){
 
 
 int termination(size_t num_allocated, struct pm *pm, int msgqid) {
-    clear_all_processes(pm);
+    clear_all_processes();
     allfree(num_allocated, pm);
     msgctl(msgqid, IPC_RMID, NULL);
     return 0;

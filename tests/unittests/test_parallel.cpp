@@ -119,7 +119,7 @@ TEST_F(TestParallelMapFixture, FindNumSymbols) {
     EXPECT_EQ(BAD_CODING, FindNumSymbols(&num_of_symbols, valid_file_name.c_str(),
                                                     symbols, invalid_coding, 0));
     EXPECT_EQ(0, FindNumSymbols(&num_of_symbols, valid_file_name.c_str(),
-                                         symbols, 0, 0));
+                                         symbols, 0, valid_memory));
 }
 
 
@@ -130,6 +130,7 @@ TEST_F(TestParallelMapFixture, MmapAndSearch){
     EXPECT_EQ(0, MapAndSearch(&num_of_symbols, fd2, symbols_for_mmap, f2_len, valid_coding, 1, valid_memory));
     EXPECT_EQ(num_of_symbols, 4);
 }
+
 
 
 TEST(TestParallelUtils, ProperFree){
