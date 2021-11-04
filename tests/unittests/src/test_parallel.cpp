@@ -133,7 +133,7 @@ TEST_F(TestParallelMapFixture, MmapAndSearch){
 
 
 TEST(TestParallelUtils, ProperFree){
-    struct pm pm;
+    struct process_map pm;
     pm.pid = (pid_t *)malloc(sizeof(pid_t));
     pm.map = (char **)malloc(sizeof(char*));
     pm.map_size = (size_t *)malloc(sizeof(size_t));

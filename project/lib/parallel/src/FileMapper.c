@@ -130,6 +130,9 @@ size_t DoMmap(size_t *fd_length, size_t map_one_proc, int fd, size_t file_offset
         }
         return 1;
     }
+    if (pm->map[elem] == MAP_FAILED) {
+        return ERROR_MAP;
+    }
     return 0;
 }
 
