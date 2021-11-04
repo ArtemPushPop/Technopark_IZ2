@@ -1,4 +1,3 @@
-include(CTest)
 if (GTEST_LOCAL)
     find_package(GTest REQUIRED)
     set(GTEST_LINK_LIBS GTest::gtest_main GTest::gtest)
@@ -13,35 +12,33 @@ else ()
     set(GTEST_LINK_LIBS gtest_main gtest)
 endif ()
 
-enable_testing()
-
-
 # Create binaries of tests
 
-add_executable(unit_consistent_test test_consistent.cpp)
-target_link_libraries(unit_consistent_test ${GTEST_LINK_LIBS})
-target_link_libraries(unit_consistent_test consistent)
-add_test(NAME AllTestsConsistent COMMAND unit_consistent_test)
+add_executable(unit_consistent_test src/test_consistent.cpp)
+target_link_libraries(unit_consistent_test ${GTEST_LINK_LIBS} consistent)
+add_test(NAME AllTestsConsistent
+        WORKING_DIRECTORY ${DATA_FILES_PATH}
+        COMMAND unit_consistent_test)
 
 
-add_executable(unit_parallel_test test_parallel.cpp)
-target_link_libraries(unit_parallel_test ${GTEST_LINK_LIBS})
-target_link_libraries(unit_parallel_test parallel)
-add_test(NAME AllTestsParallel COMMAND unit_parallel_test)
+add_executable(unit_parallel_test src/test_parallel.cpp)
+target_link_libraries(unit_parallel_test ${GTEST_LINK_LIBS} parallel)
+add_test(NAME AllTestsParallel
+        WORKING_DIRECTORY ${DATA_FILES_PATH}
+        COMMAND unit_parallel_test)
 
-add_executable(unit_coding test_coding.cpp)
-target_link_libraries(unit_coding ${GTEST_LINK_LIBS})
-target_link_libraries(unit_coding coding)
-add_test(NAME AllTestsCoding COMMAND unit_coding)
-
-# конфигурируем пути до тестовых файлов данных
-configure_file("include/data_path.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/data_path.h")
-target_include_directories(unit_consistent_test PUBLIC include)
-target_include_directories(unit_parallel_test PUBLIC include)
+add_executable(unit_coding src/test_coding.cpp)
+target_link_libraries(unit_coding ${GTEST_LINK_LIBS} coding)
+add_test(NAME AllTestsCoding
+        WORKING_DIRECTORY ${DATA_FILES_PATH}
+        COMMAND unit_coding)
 
 # код кавереж
-include(CodeCoverage)
-setup_target_for_coverage_gcovr_xml(
-        NAME IZ2_coverage
-        EXECUTABLE ctest
-        BASE_DIRECTORY ${PROJECT_FOLDER}/lib)
+if (ENABLE_COVERAGE)
+    include(CodeCoverage)
+
+    setup_target_for_coverage_gcovr_xml(
+            NAME IZ2_coverage
+            EXECUTABLE ctest
+            BASE_DIRECTORY ${PROJECT_FOLDER}/lib)
+endif ()

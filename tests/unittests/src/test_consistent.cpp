@@ -6,7 +6,6 @@ extern "C" {
 #include "FileMapper.h"
 #include "Search.h"
 #include "Errors.h"
-#include "data_path.h"
 #include <fcntl.h>
 }
 
@@ -42,7 +41,7 @@ class TestConsistentMapFixture : public testing::Test {
 protected:
     void SetUp() override {
         fd1 = open(valid_file_name.c_str(), O_RDONLY);
-        fd2 = open((std::string(DATA_FILES_PATH) + "file2.txt").c_str(), O_RDONLY);
+        fd2 = open("file2.txt", O_RDONLY);
         if (fd2 == -1){
             close(fd1);
             exit(1);
@@ -53,7 +52,7 @@ protected:
         struct stat st;
         stat(valid_file_name.c_str(), &st);
         f1_len = st.st_size;
-        stat((std::string(DATA_FILES_PATH) + "file2.txt").c_str(), &st);
+        stat(+ "file2.txt", &st);
         f2_len = st.st_size;
 
         page = getpagesize();
@@ -63,8 +62,8 @@ protected:
         close(fd1);
         close(fd2);
     }
-    std::string valid_file_name = std::string(DATA_FILES_PATH) + "file1.txt";
-    std::string invalid_file_name = std::string(DATA_FILES_PATH) + "invalid_file.txt";
+    std::string valid_file_name = "file1.txt";
+    std::string invalid_file_name = "invalid_file.txt";
 
     size_t valid_coding = 1;
     size_t invalid_coding = 3;
