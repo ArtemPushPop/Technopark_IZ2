@@ -15,11 +15,6 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
 
 
-before_script:
-  - mkdir build
-  - cd build
-
-
 matrix:
   include:
     - os: linux
@@ -32,15 +27,16 @@ matrix:
             - g++-6
             - valgrind
       script:
-        - cmake -DCONSISTENT=ON -DGTEST_LOCAL=OFF ..
+        - mkdir build
+        - cd build
+        - cmake -DCONSISTENT=ON ..
         - make
         - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./main
         - cmake -DCONSISTENT=OFF -DPARALLEL=ON ..
         - make
         - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./main
 
-    - os: linux
-      name: "cppcheck"
+    - name: "cppcheck"
       addons:
         apt:
           sources:
@@ -49,11 +45,10 @@ matrix:
             - g++-6
             - cppcheck
       script:
-        - cppcheck ../project
-        - cppcheck ../tests
+        - cppcheck project
+        - cppcheck tests
 
-    - os: linux
-      name: "coverage and unit tests under valgrind"
+    - name: "coverage and unit tests under valgrind"
       addons:
         apt:
           sources:
@@ -63,7 +58,9 @@ matrix:
             - gcovr
             - valgrind
       script:
-        - cmake -DTESTS=ON -DENABLE_COVERAGE=ON -DGTEST_LOCAL=OFF ..
+        - mkdir build
+        - cd build
+        - cmake -DTESTS=ON -DENABLE_COVERAGE=ON ..
         - make
         - make IZ2_coverage
         - valgrind  --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_coding
@@ -71,12 +68,10 @@ matrix:
         - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./unit_parallel_test
         - ctest --verbose
 
-        - export CODECOV_TOKEN='6d8bfa4c-1fa7-4377-a9bc-af8c3c7eda3f'
         - bash <(curl -s https://codecov.io/bash) -f IZ2_coverage.xml || echo "Codecov did not collect coverage reports"
 
 
-    - os: linux
-      name: "Stress test"
+    - name: "Stress test"
       addons:
         apt:
           sources:
@@ -86,6 +81,8 @@ matrix:
             - gcovr
             - valgrind
       script:
-        - cmake -DSTRESS_TEST=ON -DGTEST_LOCAL=OFF ..
+        - mkdir build
+        - cd build
+        - cmake -DSTRESS_TEST=ON ..
         - make
         - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./stress_test
