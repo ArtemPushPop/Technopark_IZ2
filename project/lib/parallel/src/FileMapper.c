@@ -19,7 +19,7 @@
 #define MIN(a, b) ((a) < (b)) ? (a) : (b)
 
 
-int allfree(size_t num_allocated, struct pm *pm){
+int allfree(size_t num_allocated, struct process_map *pm){
     if (pm == NULL)
         return 1;
     for (size_t i = 0; i < num_allocated; i++){
@@ -46,7 +46,7 @@ int clear_all_processes(){
 }
 
 
-int termination(size_t num_allocated, struct pm *pm, int msgqid) {
+int termination(size_t num_allocated, struct process_map *pm, int msgqid) {
     clear_all_processes();
     allfree(num_allocated, pm);
     msgctl(msgqid, IPC_RMID, NULL);
@@ -116,8 +116,26 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
 }
 
 
+size_t DoMmap(size_t *fd_length, size_t map_one_proc, int fd, size_t file_offset, struct process_map *pm, size_t elem){
+    if (*fd_length > map_one_proc){
+        pm->map[elem] = mmap(NULL, map_one_proc, PROT_READ, MAP_PRIVATE, fd, file_offset * map_one_proc);
+        pm->map_size[elem] = map_one_proc;
+        *fd_length -= map_one_proc;
+    }
+    else{
+        pm->map[elem] = mmap(NULL, *fd_length, PROT_READ, MAP_PRIVATE, fd, file_offset * map_one_proc);
+        pm->map_size[elem] = *fd_length;
+        if (pm->map[elem] == MAP_FAILED) {
+            return ERROR_MAP;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+
 int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], size_t fd_length, size_t coding, size_t procs, size_t map_one_proc){
-    struct pm pm;
+    struct process_map pm;
     pm.pid = (pid_t *) malloc(sizeof(pid_t) * procs);
     pm.map = (char **) malloc(sizeof(char *) * procs);
     pm.map_size = (size_t *) malloc(sizeof(size_t) * procs);
@@ -129,17 +147,8 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
     size_t i = 0;
     int e_o_f = 0;
     while(i < procs && !e_o_f){
-        if (fd_length > map_one_proc){
-            pm.map[i] = mmap(NULL, map_one_proc, PROT_READ, MAP_PRIVATE, fd, i * map_one_proc);
-            pm.map_size[i] = map_one_proc;
-            fd_length -= map_one_proc;
-        }
-        else{
-            pm.map[i] = mmap(NULL, fd_length, PROT_READ, MAP_PRIVATE, fd, i * map_one_proc);
-            pm.map_size[i] = fd_length;
-            e_o_f = 1;
-        }
-        if (pm.map[i] == MAP_FAILED) {
+        e_o_f = DoMmap(&fd_length, map_one_proc, fd, i, &pm, i);
+        if (e_o_f == ERROR_MAP){
             allfree(i, &pm);
             return ERROR_MAP;
         }
@@ -187,17 +196,8 @@ int MapAndSearch(size_t *num_of_symbols, const int fd, const char symbols[], siz
         pm.map[i] = NULL;
         pm.map_size[i] = 0;
         if (!e_o_f){
-            if (fd_length > map_one_proc){
-                pm.map[i] = mmap(NULL, map_one_proc, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, file_offset * map_one_proc);
-                pm.map_size[i] = map_one_proc;
-                fd_length -= map_one_proc;
-            }
-            else{
-                pm.map[i] = mmap(NULL, fd_length, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, file_offset * map_one_proc);
-                pm.map_size[i] = fd_length;
-                e_o_f = 1;
-            }
-            if (pm.map[i] == MAP_FAILED) {
+            e_o_f = DoMmap(&fd_length, map_one_proc, fd, file_offset, &pm, i);
+            if (e_o_f == ERROR_MAP) {
                 termination(procs, &pm, msgqid);
                 return ERROR_MAP;
             }

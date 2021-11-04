@@ -26,7 +26,10 @@ int main(int argc, char *argv[]){
     }
 
     size_t num_of_patterns = 0;
-    FindNumSymbols(&num_of_patterns, file_name, pattern, coding, 0);
-    printf("%zu\n", num_of_patterns);
+    size_t result = FindNumSymbols(&num_of_patterns, file_name, pattern, coding, 0);
+    if (result != 0)
+        printf("RUNTIME ERROR");
+    else
+        printf("%zu\n", num_of_patterns);
     return 0;
 }

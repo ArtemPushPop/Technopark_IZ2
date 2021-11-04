@@ -13,9 +13,10 @@
 #include <memory.h>
 
 
-int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char symbols[], size_t coding, size_t memory_available){
+int FindNumSymbols(size_t *num_of_symbols, const char *file_path, const char symbols[], size_t coding, size_t memory_available){
     struct sysinfo si;
-    sysinfo(&si);
+    if (sysinfo(&si) != 0)
+        return ERROR_SYS_CALL;
     size_t page = getpagesize();
 
     //обработка входных параметров, подстройка под параметры системы.
@@ -39,7 +40,8 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
     if ((fd = open(file_path, O_RDONLY)) == -1)
         return ERROR_OPEN_FILE; //не удалось открыть файл.
     struct stat st;
-    stat(file_path, &st);
+    if (stat(file_path, &st) != 0)
+        return ERROR_SYS_CALL;
     size_t file_len = st.st_size;
 
 
@@ -50,7 +52,7 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
     char *symbols_m = malloc(sizeof(char) * (symbols_len + 1));
     strcpy(symbols_m, symbols);
     size_t j = 1;
-    for (size_t i = 1; i * coding < symbols_len; i++){
+    for (size_t i = 1; i * coding < symbols_len; ++i){
         size_t z = 0;
         while ((z < i) && (!CompareWithCoding(symbols + coding * z, symbols + coding * i, coding)))
             z++;
@@ -89,7 +91,7 @@ int MmapAndSearch(size_t *num_of_symbols, int fd, size_t file_len, const char sy
         if (map == MAP_FAILED) {
             return ERROR_MAP;
         }
-        i++;
+        ++i;
         FindSymbolInMap(num_of_symbols , map, size_map, symbols, coding);
         munmap(map, size_map);
     }

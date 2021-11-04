@@ -2,24 +2,19 @@
 #include "Errors.h"
 #include "CodingFeatures.h"
 
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/msg.h>
 #include <signal.h>
 
-
-void handler(int signum){
-    if (signum == SIGKILL){
+void handler(int signum) {
+    if (signum == SIGKILL) {
         exit(SIGNAL_KILL);
     }
 }
 
-
-int FindSymbolInMap(const char map[], size_t size, const char symbols[], size_t coding, int msgqid){
-    signal(SIGKILL, handler);
-
+size_t CalculateNumOfSymbols(const char map[], size_t size, const char symbols[], size_t coding) {
     size_t number_finded = 0;
     size_t j;
     size_t sym_size = strlen(symbols);
@@ -28,13 +23,20 @@ int FindSymbolInMap(const char map[], size_t size, const char symbols[], size_t 
         while ((j * coding < sym_size) && (!CompareWithCoding(map + coding * i, symbols + coding * j, coding)))
             j++;
         if (j * coding != sym_size)
-            (number_finded)++;
+            ++number_finded;
     }
+    return number_finded;
+}
+
+int FindSymbolInMap(const char map[], size_t size, const char symbols[], size_t coding, int msgqid) {
+    signal(SIGKILL, handler);
+
+    size_t number_finded = CalculateNumOfSymbols(map, size, symbols, coding);
 
     struct my_msgbuf msg;
     msg.mtype = MSG_TYPE;
     sprintf(msg.mtext, "%zu", number_finded);
-    if (msgsnd(msgqid, (struct msgbuf *) &msg, strlen(msg.mtext) + 1, 0) == -1){
+    if (msgsnd(msgqid, (struct msgbuf *)&msg, strlen(msg.mtext) + 1, 0) == -1) {
         exit(ERROR_MESSAGE_Q);
     };
     exit(0);
