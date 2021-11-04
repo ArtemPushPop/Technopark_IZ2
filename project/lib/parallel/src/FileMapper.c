@@ -98,7 +98,7 @@ int FindNumSymbols(size_t *num_of_symbols, const char file_path[], const char sy
     size_t j = 1;
     for (size_t i = 1; i * coding < symbols_len; i++){
         size_t z = 0;
-        while ((z < i) && (CompareWithCoding(symbols + coding * z, symbols + coding * i, coding)))
+        while ((z < i) && (!CompareWithCoding(symbols + coding * z, symbols + coding * i, coding)))
             z++;
         if (z == i){
             CopyWithCoding(symbols_m + coding * j, symbols + coding * i, coding);
