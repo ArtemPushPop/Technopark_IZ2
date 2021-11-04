@@ -18,20 +18,20 @@ add_executable(unit_consistent_test src/test_consistent.cpp)
 target_link_libraries(unit_consistent_test ${GTEST_LINK_LIBS} consistent)
 add_test(NAME AllTestsConsistent
         WORKING_DIRECTORY ${DATA_FILES_PATH}
-        COMMAND unit_consistent_test)
+        COMMAND valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all $<TARGET_FILE:unit_consistent_test>)
 
 
 add_executable(unit_parallel_test src/test_parallel.cpp)
 target_link_libraries(unit_parallel_test ${GTEST_LINK_LIBS} parallel)
 add_test(NAME AllTestsParallel
         WORKING_DIRECTORY ${DATA_FILES_PATH}
-        COMMAND unit_parallel_test)
+        COMMAND valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all $<TARGET_FILE:unit_parallel_test>)
 
 add_executable(unit_coding src/test_coding.cpp)
 target_link_libraries(unit_coding ${GTEST_LINK_LIBS} coding)
 add_test(NAME AllTestsCoding
         WORKING_DIRECTORY ${DATA_FILES_PATH}
-        COMMAND unit_coding)
+        COMMAND valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all $<TARGET_FILE:unit_coding>)
 
 # код кавереж
 if (ENABLE_COVERAGE)
@@ -39,6 +39,6 @@ if (ENABLE_COVERAGE)
 
     setup_target_for_coverage_gcovr_xml(
             NAME IZ2_coverage
-            EXECUTABLE ctest
+            EXECUTABLE ctest --verbose
             BASE_DIRECTORY ${PROJECT_FOLDER}/lib)
 endif ()
