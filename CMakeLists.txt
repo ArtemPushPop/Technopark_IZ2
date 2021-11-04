@@ -1,19 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 project(IZ2)
 
-# для борьбы с оптимизированным выводом переменных в дебаге
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
-
-
 # настройки проекта
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_C_FLAGS "-Wall -Werror -Wpedantic -ggdb3")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-Wall -Werror -Wpedantic -ggdb3 -O3")
+add_compile_options(-Wall -Werror -Wpedantic)
 
 # нужен абсолютный путь для формирования code coverage в tests/unittests/CMakeLists.txt
 set(PROJECT_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/project)
@@ -29,15 +22,14 @@ option(PARALLEL "link parallel library" OFF)
 option(CONSISTENT "link consistent library" OFF)
 option(STRESS_TEST "Do stress test of libraries" OFF)
 option(TESTS "Configure unit tests" OFF)
-option(GTEST_LOCAL "gonfigured gtest on local machine?" ON)
+option(GTEST_LOCAL "Configured gtest on local machine?" OFF)
 option(ENABLE_COVERAGE "Build tests coverage statistic" OFF)
 
 # проверка в данный момент, так как библиотеки следует
 # билдить с флагом кавереж
 if (ENABLE_COVERAGE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  --coverage")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
 endif ()
 
 
