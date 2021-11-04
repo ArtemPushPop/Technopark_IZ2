@@ -1,0 +1,2 @@
+add_library(count_symbols_interface INTERFACE)
+target_include_directories(count_symbols_interface INTERFACE include)

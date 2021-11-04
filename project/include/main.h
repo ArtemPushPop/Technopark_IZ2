@@ -2,5 +2,5 @@
 
 
 #define DATA_FILE "/home/artem/TECHNOPARK/Technopark_IZ2/data/data.txt"
-#define PARALLEL
+/* #undef PARALLEL */
 /* #undef CONSISTENT */
