@@ -1,0 +1,84 @@
+language: cpp
+dist: bionic
+compiler: gcc
+
+
+install:
+  # необходимо для установки нужной версии Cmake 3.15 для
+  # правильной установки библиотеки gtest
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
+  - travis_retry wget --no-check-certificate https://cmake.org/files/v3.15/cmake-3.15.1-Linux-x86_64.tar.gz
+  - tar -xvf cmake-3.15.1-Linux-x86_64.tar.gz > /dev/null
+  - mv cmake-3.15.1-Linux-x86_64 cmake-install
+  - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
+  - cd ${TRAVIS_BUILD_DIR}
+
+
+matrix:
+  include:
+    - os: linux
+      name: "valgrind test of project"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - valgrind
+      script:
+        - mkdir build
+        - cd build
+        - cmake -DCONSISTENT=ON ..
+        - make
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./main
+        - cmake -DCONSISTENT=OFF -DPARALLEL=ON ..
+        - make
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./main
+
+    - name: "cppcheck"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - cppcheck
+      script:
+        - cppcheck project
+        - cppcheck tests
+
+    - name: "coverage and unit tests under valgrind"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - gcovr
+            - valgrind
+      script:
+        - mkdir build
+        - cd build
+        - cmake -DTESTS=ON -DENABLE_COVERAGE=ON ..
+        - make
+        - make IZ2_coverage
+
+        - bash <(curl -s https://codecov.io/bash) -f IZ2_coverage.xml || echo "Codecov did not collect coverage reports"
+
+
+    - name: "Stress test"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - gcovr
+            - valgrind
+      script:
+        - mkdir build
+        - cd build
+        - cmake -DSTRESS_TEST=ON ..
+        - make
+        - valgrind --tool=memcheck --child-silent-after-fork=yes --leak-check=full --track-origins=yes  --show-leak-kinds=all ./stress_test
